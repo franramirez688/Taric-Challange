@@ -1,0 +1,2 @@
+# Taric-Challange
+PyQt application
