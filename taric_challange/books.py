@@ -48,3 +48,7 @@ class Book(object):
     @property
     def edition(self):
         return self._data.get('edition_info', '-')
+
+    @property
+    def cover(self):
+        pass
