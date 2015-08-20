@@ -9,7 +9,4 @@ class BadRequestArgumentsException(Exception):
 
 
 class RequestErrorException(Exception):
-    """
-         Generic 400 error
-    """
     pass

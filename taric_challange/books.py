@@ -1,3 +1,4 @@
+from taric_challange.library_thing_api_client import LibraryThingApiClient
 
 
 class Book(object):
@@ -51,4 +52,6 @@ class Book(object):
 
     @property
     def cover(self):
-        pass
+        isbn = self.isbn10 or self.isbn13
+        cover_data = LibraryThingApiClient().request_cover(isbn)
+        return cover_data

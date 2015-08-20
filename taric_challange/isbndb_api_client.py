@@ -2,10 +2,11 @@ import requests
 from taric_challange.exceptions import RequestErrorException, GeneralException
 import json
 import re
-import os
+from taric_challange.tools import is_isbn_code
+from taric_challange.environment import get_isbndb_api_key, ISBNDB_API_V2_URL
+from requests.exceptions import RequestException, ConnectionError, Timeout
 
 
-API_V2_URL = 'http://isbndb.com/api/v2'
 VALID_INDEX_VALUES = ["author_id",  # (ISBNdb's internal author_id)
                       "author_name",
                       "publisher_id",  # (ISBNdb's internal publisher_id)
@@ -15,40 +16,46 @@ VALID_INDEX_VALUES = ["author_id",  # (ISBNdb's internal author_id)
                       "dewey",  # (dewey decimal number)
                       "lcc",  # (library of congress number)
                       "combined",  # (searches across title, author name and publisher name)
-                      "full",  # (searches across all indexes)
-                      ]
+                      "full"]  # (searches across all indexes)
 
 
-def get_dev_key():
-    dev_key = os.getenv("ISBNDB_API_DEV_KEY")
-    if dev_key is None:
-        raise GeneralException("No developer key founded. Please, set your API key:\n"
-                               "$> export ISBNDB_API_DEV_KEY=XXXXXXX")
-    return dev_key
-
-
-class CollectionsURLs(object):
+class CollectionURLs(object):
     """ It helps to make easier the calculate of the different URLs depending
         on the collection requested
     """
+    white_space_pattern = re.compile(r'\s+')
 
     def __init__(self, remote_url, **kwargs):
         self._remote_url = remote_url
 
-        self._all_collections = kwargs.get('all_collections')
-        self._book_name = self.validate_collection_request(kwargs.get('book'))
-        self._author_name = self.validate_collection_request(kwargs.get('author'))
-        self._subject_name = self.validate_collection_request(kwargs.get('subject'))
-        self._publisher_name = self.validate_collection_request(kwargs.get('publisher'))
+        # all_collections keyword is similar to make a big query with all the existing collections
+        self._all_collections = self._validate_collection_name(kwargs.get('all_collections'))
 
-        self._query = kwargs.get('query')
+        self._book_name = self._all_collections or self._validate_collection_name(kwargs.get('book'))
+        self._author_name = self._all_collections or self._validate_collection_name(kwargs.get('author'))
+        self._subject_name = self._all_collections or self._validate_collection_name(kwargs.get('subject'))
+        self._publisher_name = self._all_collections or self._validate_collection_name(kwargs.get('publisher'))
+
+        self._query = True if self._all_collections else kwargs.get('query', False)
         self._index = kwargs.get('index')
 
-        # Calling to requested methods
-        # TODO: ALL URLS
+    def _validate_collection_name(self, collection):
+        """  Change white spaces to underscores and upper case to lower case
+        """
+        if collection is None:
+            return
+        c = self.white_space_pattern.sub('_', collection)
+        # check is collection is not a ISBN number, like 084930315X
+        if not is_isbn_code(c):
+            c = c.lower()  # Change it to lower case
+        return c
 
-    def get_valid_url(self, _request, collection):
-        """ Select a valid URL depending on if user uses a query """
+    def _get_valid_url(self, _request, collection):
+        """ Select a valid URL depending on if user uses a query or not.
+            Format:
+                without query: http://isbndb.com/api/v2/json/[your-api-key]/book/084930315X
+                with query: http://isbndb.com/api/v2/json/[your-api-key]/books?q=science
+        """
         if self._query:
             valid_url = "%s/%ss?q=%s" % (self._remote_url, _request, collection)
         else:
@@ -56,45 +63,64 @@ class CollectionsURLs(object):
         return valid_url
 
     @property
-    def book(self):
-        url = self.get_valid_url("book", self._book_name)
-        # If index exists and is valid, we have to add another query
-        if self._query and self._index:
-            if self.index in VALID_INDEX_VALUES:
-                url = '%s&i=%s' % (url, self._index)
-            else:
-                raise GeneralException("Invalid index: %s. Please enter a "
-                                       "valid option:\n%s" % (self._index, '\n'.join(VALID_INDEX_VALUES)))
-        return url
+    def book_url(self):
+        """ Get book collection URL """
+        if self._book_name:
+            url = self._get_valid_url("book", self._book_name)
+            # If index exists and is valid, we have to add another query
+            if self._query and self._index:
+                if self._index in VALID_INDEX_VALUES:
+                    url = '%s&i=%s' % (url, self._index)
+                else:
+                    raise GeneralException("Invalid index: %s. Please enter a valid option:\n"
+                                           "%s" % (self._index, '\n'.join(VALID_INDEX_VALUES)))
+            return url
 
     @property
-    def subject(self):
-        url = self.get_valid_url("subject", self._subject_name)
-        return url
+    def subject_url(self):
+        """ Get subject collection URL """
+        if self._subject_name:
+            url = self._get_valid_url("subject", self._subject_name)
+            return url
 
     @property
-    def publisher(self):
-        url = self.get_valid_url("publisher", self._publisher_name)
-        return url
+    def publisher_url(self):
+        """ Get publisher collection URL """
+        if self._publisher_name:
+            url = self._get_valid_url("publisher", self._publisher_name)
+            return url
 
     @property
-    def author(self):
-        url = self.get_valid_url("author", self._author_name)
-        return url
+    def author_url(self):
+        """ Get author collection URL """
+        if self._author_name:
+            url = self._get_valid_url("author", self._author_name)
+            return url
 
     @property
-    def all_collections(self):
-        urls = [self.book, self.subject, self.publisher, self.author]
-        return urls
+    def urls(self):
+        """ Return all the valid API Collections URLs """
+        urls = []
+        if self._all_collections:
+            urls = [self.book_url, self.subject_url, self.publisher_url, self.author_url]
+        else:
+            if self._book_name:
+                urls.append(self.book_url)
+            if self._author_name:
+                urls.append(self.author_url)
+            if self._publisher_name:
+                urls.append(self.publisher_url)
+            if self._subject_name:
+                urls.append(self.subject_url)
+        return [_url for _url in urls if _url is not None]
 
 
 class ISBNdbApiClient(object):
     ''' This class get all the information about any book thanks to API v2 from ISBNdb.com '''
-    white_space_pattern = re.compile(r'\s+')
 
     def __init__(self, dev_key=None):
-        self._dev_key = dev_key or get_dev_key()
-        self._remote_url = '%s/json/%s' % (API_V2_URL, self._dev_key)
+        self._dev_key = dev_key or get_isbndb_api_key()
+        self._remote_url = '%s/json/%s' % (ISBNDB_API_V2_URL, self._dev_key)
 
     def request(self, **kwargs):
         """ Get the result of searching any book using the ISBNdb API v2
@@ -112,8 +138,21 @@ class ISBNdbApiClient(object):
         if not kwargs:
             raise GeneralException("You must introduce any argument,"
                                    " title, ISBN, etc.")
-        urls = CollectionsURLs(self._remote_url, **kwargs)
-        responses = [requests.get(url=url) for url in urls]
+        collection_urls = CollectionURLs(self._remote_url, **kwargs)
+        urls = collection_urls.urls
+
+        # Handling possible exceptions
+        try:
+            responses = [requests.get(url=url) for url in urls]
+        except ConnectionError:
+            raise RequestErrorException("A connection error occurred")
+        except Timeout:
+            raise RequestErrorException("The request timed out")
+        except RequestException as exc:
+            raise RequestErrorException("An error occurred while handling your request\n%s" % exc)
+        except Exception as exc:
+            raise RequestErrorException(str(exc))
+
         return responses
 
     def request_data(self, **kwargs):
@@ -122,59 +161,8 @@ class ISBNdbApiClient(object):
         data = [self.deserialize(response).get('data') for response in responses]
         return data
 
-    def validate_collection_request(self, collection):
-        """  Change white spaces to underscores and upper case to lower case
-        """
-        if collection is not None:
-            c = self.white_space_pattern.sub('_', collection)
-            # check is collection is not a ISBN number, like 084930315X
-            if c != collection:
-                c = c.lower()  # Change it to lower case
-            return c
-
     def deserialize(self, response):
         """ deserialize the response content using JSON format """
         if response.status_code != 200:
             raise RequestErrorException(response.status_code)(response.content)
         return json.loads(response.content)
-
-    def handle_urls_selector(self, **kwargs):
-        """ Get a valid URL depending on the arguments """
-        all_collections = kwargs.get('all_collections')
-        if all_collections:
-            book = author = subject = publisher = all_collections
-        else:
-            book = self.validate_collection_request(kwargs.get('book'))
-            author = self.validate_collection_request(kwargs.get('author'))
-            subject = self.validate_collection_request(kwargs.get('subject'))
-            publisher = self.validate_collection_request(kwargs.get('publisher'))
-        query = kwargs.get('query')
-        index = kwargs.get('index')
-
-        def _url(_request, collection):
-            """ Select a valid URL depending on if user uses a query """
-            if query:
-                valid_url = "%s/%ss?q=%s" % (self._remote_url, _request, collection)
-            else:
-                valid_url = "%s/%s/%s" % (self._remote_url, _request, collection)
-            return valid_url
-
-        urls = []
-        if book:
-            url = _url("book", book)
-            # If index exists and is valid, we have to add another query
-            if query and index:
-                if index in VALID_INDEX_VALUES:
-                    url = '%s&i=%s' % (url, index)
-                else:
-                    raise GeneralException("Invalid index: %s. Please enter a "
-                                           "valid option:\n%s" % (index,
-                                                                  '\n'.join(VALID_INDEX_VALUES)))
-            urls.append(url)
-        if author:
-            urls.append(_url("author", author))
-        if subject:
-            urls.append(_url("subject", subject))
-        if publisher:
-            urls.append(_url("publisher", publisher))
-        return urls
