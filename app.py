@@ -2,7 +2,7 @@
 
 import sys
 from PyQt4.QtGui import QApplication
-from taric_challange.isbn_searcher_main_window import ISBNSearcherGUI
+from taric_challange.gui.isbn_searcher_main_window import ISBNSearcherGUI
 
 
 def main():

@@ -1,6 +1,6 @@
 from PyQt4.Qt import QTableWidget, QTableWidgetItem, QWidget, QLabel,\
     QVBoxLayout, QImage, QPixmap
-from taric_challange.books import Book
+from taric_challange.core.models.book import Book
 
 
 MAIN_TABLE_DETAILS_BOOK = ["cover", "title", "author", "language", "publisher",
@@ -35,6 +35,8 @@ class BooksTableWidget(QWidget):
         # Naming column labels
         self.books_table.setHorizontalHeaderLabels(MAIN_TABLE_DETAILS_BOOK)
 
+        self.books_table.horizontalHeader().setStretchLastSection(True)
+
         # Create the box layout
         self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
@@ -45,7 +47,7 @@ class BooksTableWidget(QWidget):
 
     def update_table(self, book):
         assert isinstance(book, Book)
-        # Fill the table with each book data
+        # Fill the table with each book data (only a single book -> one row)
         for column, detail in enumerate(MAIN_TABLE_DETAILS_BOOK):
             detail_value = getattr(book, detail)
             if detail == 'cover':

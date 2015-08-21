@@ -1,10 +1,11 @@
-from taric_challange.library_thing_api_client import LibraryThingApiClient
+from taric_challange.core.apis.librarything_api_client import LibraryThingApiClient
 
 
 class Book(object):
-    """ Class to model a Book object """
+    """ This class represents a Book model object """
 
     def __init__(self, data):
+        assert isinstance(data, dict)
         self._data = data
 
     @property

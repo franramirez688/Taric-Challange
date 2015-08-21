@@ -1,9 +1,9 @@
 import requests
-from taric_challange.exceptions import RequestErrorException, GeneralException
+from taric_challange.core.exceptions import TaricRequestError, TaricGeneralException
 import json
 import re
-from taric_challange.tools import is_isbn_code
-from taric_challange.environment import get_isbndb_api_key, ISBNDB_API_V2_URL
+from taric_challange.core.tools import is_isbn_code
+from taric_challange.core.environment import get_isbndb_api_key, ISBNDB_API_V2_URL
 from requests.exceptions import RequestException, ConnectionError, Timeout
 
 
@@ -72,7 +72,7 @@ class CollectionURLs(object):
                 if self._index in VALID_INDEX_VALUES:
                     url = '%s&i=%s' % (url, self._index)
                 else:
-                    raise GeneralException("Invalid index: %s. Please enter a valid option:\n"
+                    raise TaricGeneralException("Invalid index: %s. Please enter a valid option:\n"
                                            "%s" % (self._index, '\n'.join(VALID_INDEX_VALUES)))
             return url
 
@@ -136,7 +136,7 @@ class ISBNdbApiClient(object):
         Return a json object
         """
         if not kwargs:
-            raise GeneralException("You must introduce any argument,"
+            raise TaricGeneralException("You must introduce any argument,"
                                    " title, ISBN, etc.")
         collection_urls = CollectionURLs(self._remote_url, **kwargs)
         urls = collection_urls.urls
@@ -145,13 +145,13 @@ class ISBNdbApiClient(object):
         try:
             responses = [requests.get(url=url) for url in urls]
         except ConnectionError:
-            raise RequestErrorException("A connection error occurred")
+            raise TaricRequestError("A connection error occurred")
         except Timeout:
-            raise RequestErrorException("The request timed out")
+            raise TaricRequestError("The request timed out")
         except RequestException as exc:
-            raise RequestErrorException("An error occurred while handling your request\n%s" % exc)
+            raise TaricRequestError("An error occurred while handling your request\n%s" % exc)
         except Exception as exc:
-            raise RequestErrorException(str(exc))
+            raise TaricRequestError(str(exc))
 
         return responses
 
@@ -164,5 +164,13 @@ class ISBNdbApiClient(object):
     def deserialize(self, response):
         """ deserialize the response content using JSON format """
         if response.status_code != 200:
-            raise RequestErrorException(response.status_code)(response.content)
-        return json.loads(response.content)
+            raise TaricRequestError(response.status_code)(response.content)
+        json_data = json.loads(response.content)
+        error = json_data.get('error')
+        if error:
+            if error == "Daily request limit exceeded.":
+                raise TaricRequestError("Change your Developer Key. "
+                                            "Your daily request limit has been exceeded")
+            else:
+                raise TaricRequestError(error)
+        return json_data
