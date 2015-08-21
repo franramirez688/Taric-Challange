@@ -53,5 +53,5 @@ class Book(object):
     @property
     def cover(self):
         isbn = self.isbn10 or self.isbn13
-        cover_data = LibraryThingApiClient().request_cover(isbn)
+        cover_data = LibraryThingApiClient('73b0375ac4f292d859e4901a84d7d92d').request_cover(isbn)
         return cover_data

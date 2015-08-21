@@ -103,7 +103,7 @@ class CollectionURLs(object):
         urls = []
         if self._all_collections:
             urls = [self.book_url, self.subject_url, self.publisher_url, self.author_url]
-        else:
+        else:  # Possible implementation to make an advanced search
             if self._book_name:
                 urls.append(self.book_url)
             if self._author_name:
