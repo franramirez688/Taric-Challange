@@ -5,6 +5,8 @@ This is a PyQt application which it's able to create requests to the website [IS
 Moreover, it creates requests to another website named [LibraryThing](http://www.librarything.com/home) to get book's cover from each of our requests.
 
 
+**Note**: the ISBNdb API is the newest version (V2). See [ISBNdb API -- Version 2](http://isbndb.com/api/v2/docs)
+
 ## Platforms
 
 It has been run only on `Ubuntu 15.04`
