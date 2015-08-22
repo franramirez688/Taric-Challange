@@ -1,24 +1,23 @@
-from PyQt4.QtGui import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout,\
-    QVBoxLayout
+from PyQt4 import QtGui
 
 
-class BooksSearcherWidget(QWidget):
+class BooksSearcherWidget(QtGui.QWidget):
 
     def __init__(self, label):
         super(BooksSearcherWidget, self).__init__()
 
         # Create searcher widgets
-        self.book_searcher_label = QLabel(label)
-        self.book_searcher_line_edit = QLineEdit()
-        self.book_search_button = QPushButton("Search")
+        self.book_searcher_label = QtGui.QLabel(label)
+        self.book_searcher_line_edit = QtGui.QLineEdit()
+        self.book_search_button = QtGui.QPushButton("Search")
 
         # Create searcher layout
-        self.book_searcher_box = QHBoxLayout()
+        self.book_searcher_box = QtGui.QHBoxLayout()
         self.book_searcher_box.addWidget(self.book_searcher_line_edit)
         self.book_searcher_box.addWidget(self.book_search_button)
 
         # Create main layout
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addWidget(self.book_searcher_label)
         self.main_layout.addLayout(self.book_searcher_box)
 

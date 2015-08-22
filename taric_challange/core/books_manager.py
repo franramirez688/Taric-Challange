@@ -4,7 +4,7 @@ from taric_challange.core.tools import is_isbn_code
 from taric_challange.core.exceptions import TaricGeneralException
 
 
-COLLECTIONS = ['author', 'isbn', 'title', 'publisher', 'subject']
+COLLECTIONS = ['author', 'book', 'publisher', 'subject']
 QUERIES = ['query', 'index']
 
 
@@ -21,7 +21,7 @@ class BooksManager(object):
         all_data = self._remote_request_data(str(keyword))
         all_books_ids = []  # check if there is any repeated book_id
         if all_data is None:
-            raise TaricGeneralException("Imposible to get any data from the keyword: %s" % keyword)
+            raise TaricGeneralException("Impossible to get any data from the keyword: %s" % keyword)
 
         # Clear old books data
         self.books = []
@@ -59,20 +59,35 @@ class BooksManager(object):
             A keyword without ':' key means that you want to use "all the collections"
             URL to search any book
         """
-        fields = keyword.split(':')
-        all_data = None
-        # If keyword is like, "subject: maths"
-        if len(fields) == 2:
-            collection = fields[0].lower()
-            keyword = fields[1].strip()
-            if collection == 'title' or collection == 'isbn':
-                all_data = self._isbndb_api_client.request_data(book=keyword, query=True)
-            elif collection == 'author':
-                all_data = self._isbndb_api_client.request_data(author=keyword, query=True)
-            elif collection == 'publisher':
-                all_data = self._isbndb_api_client.request_data(publisher=keyword, query=True)
-            elif collection == 'subject':
-                all_data = self._isbndb_api_client.request_data(subject=keyword, query=True)
+
+        def _calculate_kwargs(keyword):
+            """ Check if the keyword is like:
+                book: Harry Potter && query: True && index: author_name
+            """
+            kwargs = {}
+            queries = keyword.split('&&')
+            for query in queries:
+                fields = query.split(':')
+                # If keyword is like, "subject: maths", etc.
+                if len(fields) == 2:
+                    _collection = fields[0].lower().strip()
+                    _keyword = fields[1].strip()
+                    if _collection in COLLECTIONS or _collection in QUERIES:
+                        kwargs[_collection] = _keyword
+                    else:
+                        raise TaricGeneralException("This collection or query does not exist %s" %
+                                                    _collection)
+            _q = kwargs.get('query')
+            if _q:
+                if _q == 'True' or _q == 'true':
+                    kwargs['query'] = True
+                else:
+                    kwargs['query'] = False
+            return kwargs
+
+        kwargs = _calculate_kwargs(keyword)
+        if kwargs:
+                all_data = self._isbndb_api_client.request_data(**kwargs)
         elif is_isbn_code(keyword):  # Check first is a ISBN code to make a fast request
             all_data = self._isbndb_api_client.request_data(book=keyword)
         else:  # else search around all the collections

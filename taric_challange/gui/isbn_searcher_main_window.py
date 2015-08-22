@@ -52,7 +52,7 @@ class ISBNSearcherGUI(QtGui.QMainWindow):
         self.books_list_widget.books_list.clicked.connect(self.update_table_list)
 
     def create_menu_bar(self):
-        show_help_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Help', self)
+        show_help_action = QtGui.QAction('&Help', self)
         show_help_action.setShortcut('Ctrl+H')
         show_help_action.setStatusTip('Help information')
         show_help_action.triggered.connect(self.show_help_info)
@@ -62,7 +62,39 @@ class ISBNSearcherGUI(QtGui.QMainWindow):
         fileMenu.addAction(show_help_action)
 
     def show_help_info(self):
-        QtGui.QMessageBox.information(self, "Search box", "Enter any word to search")
+        help_info = """<html>
+<p>This is a brief explanation to use the ISBNdb searcher.</p>
+<p>You can make searches about these collections: <b>book (title or isbn),
+ author, subject or publisher</b></p>
+<p></p>
+<ol>
+  <li>Simple and general search around all the possible collections:</li>
+          <p><b>science fiction</b></p>
+          <p style="color:red">WARNING!</br> This search generates a lot of ones
+           so you could spend all your free daily ISBNdb API requests</p>
+  <li>A specific search:</li>
+          <p><b>book: 0545010225</b></p>
+  <li>A query search:</li>
+          <p><b>subject: brain disease && query: True</b></p>
+  <li>A query search with a customized index (only books and query must be True):</li>
+          <p><b>book: Harry Potter && query: True && index: author_name</b></p>
+          <p>Note: valid index values:</p>
+        <ul>
+            <li>author_id -> ISBNdb's internal author_id </li>
+            <li>author_name</li>
+            <li>publisher_id -> ISBNdb's internal publisher_id</li>
+            <li>publisher_name</li>
+            <li>book_summary</li>
+            <li>book_notes</li>
+            <li>dewey -> dewey decimal number</li>
+            <li>lcc -> library of congress number</li>
+            <li>combined -> searches across title, author name and publisher name</li>
+            <li>full -> searches across all indexes</li>
+        </ul>
+</ol>
+</html>
+"""
+        QtGui.QMessageBox.information(self, "Help Info", help_info)
 
     def update_books_list(self):
         keyword = self.books_searcher_widget.get_text()

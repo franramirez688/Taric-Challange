@@ -1,5 +1,4 @@
-from PyQt4.QtGui import QTableWidget, QTableWidgetItem, QWidget, QLabel,\
-    QVBoxLayout, QImage, QPixmap
+from PyQt4 import QtGui
 from taric_challange.core.models.book import Book
 
 
@@ -7,26 +6,26 @@ MAIN_TABLE_DETAILS_BOOK = ["cover", "title", "author", "language", "publisher",
                            "subjects", "edition", "isbn10"]
 
 
-class _CoverBookImageWidget(QLabel):
+class _CoverBookImageWidget(QtGui.QLabel):
     """ Private class to create the cover book image widget """
     def __init__(self, cover_data):
         super(_CoverBookImageWidget, self).__init__()
         # Create a QImage object a load the cover data
-        self.image = QImage()
+        self.image = QtGui.QImage()
         self.image.loadFromData(cover_data)
 
         # Associate the image to a Pixmap
-        self.setPixmap(QPixmap(self.image))
+        self.setPixmap(QtGui.QPixmap(self.image))
 
 
-class BooksTableWidget(QWidget):
+class BooksTableWidget(QtGui.QWidget):
     """ This class shows all the books results an their details """
 
     def __init__(self, label):
         super(BooksTableWidget, self).__init__()
         # init label and table widgets
-        self.title_label = QLabel(label)
-        self.books_table = QTableWidget()
+        self.title_label = QtGui.QLabel(label)
+        self.books_table = QtGui.QTableWidget()
 
         # Setting rows and columns number
         self.books_table.setRowCount(1)
@@ -38,7 +37,7 @@ class BooksTableWidget(QWidget):
         self.books_table.horizontalHeader().setStretchLastSection(True)
 
         # Create the box layout
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addWidget(self.books_table)
 
@@ -53,7 +52,7 @@ class BooksTableWidget(QWidget):
             if detail == 'cover':
                 self.books_table.setCellWidget(0, column, _CoverBookImageWidget(detail_value))
             else:
-                self.books_table.setItem(0, column, QTableWidgetItem(detail_value))
+                self.books_table.setItem(0, column, QtGui.QTableWidgetItem(detail_value))
 
         # Resize all the Contents
         self.books_table.resizeColumnsToContents()

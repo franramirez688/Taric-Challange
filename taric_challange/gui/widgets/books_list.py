@@ -1,31 +1,30 @@
-from PyQt4.QtGui import QListView, QAbstractItemView, QStringListModel, QWidget,\
-    QLabel, QVBoxLayout
+from PyQt4 import QtGui
 
 
-class BooksListWidget(QWidget):
+class BooksListWidget(QtGui.QWidget):
     """ Uneditable list's books """
 
     def __init__(self, label):
         super(BooksListWidget, self).__init__()
 
         # init label and table widgets
-        self.title_label = QLabel(label)
-        self.books_list = QListView()
+        self.title_label = QtGui.QLabel(label)
+        self.books_list = QtGui.QListView()
 
         # List settings
         self.books_list.minimumHeight()
 
         # Make the list uneditable
-        self.books_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.books_list.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
         # Create a model for the list's books
-        self.model = QStringListModel()
+        self.model = QtGui.QStringListModel()
 
         # Apply the model to the list view
         self.books_list.setModel(self.model)
 
         # Create the layout
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addWidget(self.books_list)
 
