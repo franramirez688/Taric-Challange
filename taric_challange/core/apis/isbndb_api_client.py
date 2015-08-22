@@ -3,7 +3,7 @@ from taric_challange.core.exceptions import TaricRequestError, TaricGeneralExcep
 import json
 from taric_challange.core.environment import get_isbndb_api_key, ISBNDB_API_V2_URL
 from requests.exceptions import RequestException, ConnectionError, Timeout
-from taric_challange.core.apis import ISBNdbCollectionURLs
+from taric_challange.core.apis.isbndb_collection_urls import ISBNdbCollectionURLs
 
 
 class ISBNdbApiClient(object):

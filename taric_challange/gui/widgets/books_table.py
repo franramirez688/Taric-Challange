@@ -1,4 +1,4 @@
-from PyQt4.Qt import QTableWidget, QTableWidgetItem, QWidget, QLabel,\
+from PyQt4.QtGui import QTableWidget, QTableWidgetItem, QWidget, QLabel,\
     QVBoxLayout, QImage, QPixmap
 from taric_challange.core.models.book import Book
 
@@ -58,5 +58,3 @@ class BooksTableWidget(QWidget):
         # Resize all the Contents
         self.books_table.resizeColumnsToContents()
         self.books_table.resizeRowsToContents()
-
-        

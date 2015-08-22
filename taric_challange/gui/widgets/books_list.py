@@ -1,4 +1,4 @@
-from PyQt4.Qt import QListView, QAbstractItemView, QStringListModel, QWidget,\
+from PyQt4.QtGui import QListView, QAbstractItemView, QStringListModel, QWidget,\
     QLabel, QVBoxLayout
 
 

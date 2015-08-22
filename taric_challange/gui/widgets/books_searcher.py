@@ -1,4 +1,4 @@
-from PyQt4.Qt import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout,\
+from PyQt4.QtGui import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout,\
     QVBoxLayout
 
 
