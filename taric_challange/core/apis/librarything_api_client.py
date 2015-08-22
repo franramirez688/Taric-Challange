@@ -32,5 +32,5 @@ class LibraryThingApiClient(object):
             raise TaricRequestError(str(exc))
 
         if response.status_code != 200:
-            raise TaricRequestError(response.status_code)(response.content)
+            raise TaricRequestError("Failed request, response status code: %s" % response.status_code)
         return response.content

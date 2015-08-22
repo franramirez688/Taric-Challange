@@ -43,7 +43,7 @@ class ISBNSearcherGUI(QMainWindow):
         # connections
         self.books_searcher_widget.book_searcher_line_edit.returnPressed.connect(self.update_books_list)
         self.books_searcher_widget.book_search_button.clicked.connect(self.update_books_list)
-        self.books_list_widget.books_list.doubleClicked.connect(self.update_table_list)
+        self.books_list_widget.books_list.clicked.connect(self.update_table_list)
 
     def update_books_list(self):
         keyword = self.books_searcher_widget.get_text()
@@ -56,7 +56,7 @@ class ISBNSearcherGUI(QMainWindow):
     @QtCore.pyqtSlot(QtCore.QModelIndex)
     def update_table_list(self, index):
         """ method to update the table book list """
-        book = self.books_manager.books[index.row()][1]  # get book object
+        book = self.books_manager.books[index.row()]  # get book object
         self.books_table_widget.update_table(book)
 
     def focus(self):

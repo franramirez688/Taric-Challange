@@ -4,6 +4,10 @@ from taric_challange.core.tools import is_isbn_code
 from taric_challange.core.exceptions import TaricGeneralException
 
 
+COLLECTIONS = ['author', 'isbn', 'title', 'publisher', 'subject']
+QUERIES = ['query', 'index']
+
+
 class BooksManager(object):
     """ This class manages the books data retrieving """
 

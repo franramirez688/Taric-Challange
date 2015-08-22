@@ -58,3 +58,5 @@ class BooksTableWidget(QWidget):
         # Resize all the Contents
         self.books_table.resizeColumnsToContents()
         self.books_table.resizeRowsToContents()
+
+        
