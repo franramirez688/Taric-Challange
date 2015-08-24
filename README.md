@@ -1,8 +1,8 @@
 # ISBNdb Searcher
 
-This is a PyQt application which it's able to create requests to the website [ISBNdb](http://isbndb.com/) and get all the necessary information details in a simple table.
+This is a PyQt application which is able to create requests to the website [ISBNdb](http://isbndb.com/) and get all the necessary information details in a simple table.
 
-Moreover, it creates requests to another website named [LibraryThing](http://www.librarything.com/home) to get book's cover from each of our requests.
+Moreover, it creates requests to another website named [LibraryThing](http://www.librarything.com/home) to get book's cover from each one of our requests.
 
 
 **Note**: the ISBNdb API is the newest version (V2). See [ISBNdb API -- Version 2](http://isbndb.com/api/v2/docs)
@@ -44,6 +44,15 @@ Finally, execute the **app.py** file to launch the application:
 
 ```sh
 $ ./app.py
+```
+
+## Testing
+
+Run the tests with `nose` package tool. Install the necessary packages
+
+```sh
+$ pip install -r ./taric_challange/core/test/requirements.txt
+$ nosetests
 ```
 
 ## Searches
